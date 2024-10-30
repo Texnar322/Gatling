@@ -10,7 +10,7 @@ class CodeReuseWithObjects extends Simulation {
 
 
   def getAllVideoGames() = {
-    repeat(3) {
+    repeat(1) {
       exec(http("Get all video games - 1st call")
         .get("videogames")
         .check(status.is(200)))
@@ -18,7 +18,7 @@ class CodeReuseWithObjects extends Simulation {
   }
 
   def getSpecificVideoGame() = {
-    repeat(5) {
+    repeat(100) {
       exec(http("Get specific game")
         .get("videogames/1")
         .check(status.in(200 to 210)))
