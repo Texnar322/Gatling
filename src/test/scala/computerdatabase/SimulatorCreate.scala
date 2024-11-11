@@ -20,6 +20,8 @@ class SimulatorCreate extends Simulation {
     .userAgentHeader(
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:16.0) Gecko/20100101 Firefox/16.0"
     )
+  val accountNumber = csv("data/accountNumber.csv").circular()
+  val price = csv("data/price.csv").circular()
 //  val executionTime = 2 hours
 //  val authTimeout = 10 minutes
 //  val safetyMargin = 30 seconds
@@ -29,6 +31,7 @@ class SimulatorCreate extends Simulation {
 ///// доделать
   def refresh() = {
     repeat(1) {
+
       exec(
         http("/passport/oauth2/token?realm=/myinvestments")
           .post("/passport/oauth2/token?realm=/myinvestments")
@@ -47,29 +50,31 @@ class SimulatorCreate extends Simulation {
 /////
   def Create() = {
     repeat(1) {
+      feed(accountNumber)
+      feed(price)
       exec(
         http("Create")
           .post("/ui-api-mi/kib/itrd/mi_api/v1/mi_api/order/create")
           //.header("Authorization", "${access_token}")
-          .header("Authorization", "AQIC5wM2LY4SfcycuktnJ0-PQerIXq6FDplcY2RYcx2Ch04.*AAJTSQACMDIAAlNLABM3NDM2MzU1MzQ4NjU4MzUyMjA0AAJTMQACMDE.*")
+          .header("Authorization", "AQIC5wM2LY4SfcyapmlnEck4DIz8eomgacXxekuiaC_hFiQ.*AAJTSQACMDIAAlNLABQtMTg1NDg5ODc0OTM1NDQ3OTA2MAACUzEAAjAx*")
           .header("Content-Type", "application/json")
           .body(StringBody(
             """{
-              |    "accountNumber": "500119",
-              |    "securCode": "CNYRUB_TOM",
-              |    "secBoard": "CETS",
+              |    "accountNumber": "${accountNumber}",
+              |    "securCode": "MTLR",
+              |    "secBoard": "TQBR",
               |    "bs": "B",
-              |    "amount": 1000,
+              |    "amount": 1,
               |    "type": 1,
               |    "sourceType": 1,
-              |    "price": 13.4
+              |    "price": ${price}
               |}""".stripMargin))
           .check(jsonPath("$.orderId").saveAs("orderId"))
       )
         .exec(
           http("Confirm")
             .post("/ui-api-mi/kib/itrd/mi_api/v1/mi_api/order/confirm/${orderId}")
-            .header("Authorization", "AQIC5wM2LY4SfcycuktnJ0-PQerIXq6FDplcY2RYcx2Ch04.*AAJTSQACMDIAAlNLABM3NDM2MzU1MzQ4NjU4MzUyMjA0AAJTMQACMDE.*")
+            .header("Authorization", "AQIC5wM2LY4SfcyapmlnEck4DIz8eomgacXxekuiaC_hFiQ.*AAJTSQACMDIAAlNLABQtMTg1NDg5ODc0OTM1NDQ3OTA2MAACUzEAAjAx*")
             //.header("Authorization", "${access_token}")
             .header("Content-Type", "application/json")
             .body(StringBody(
@@ -78,40 +83,10 @@ class SimulatorCreate extends Simulation {
     }
   }
 
-    def Create1() = {
-      repeat(1) {
-        exec(
-          http("Create")
-            .post("/ui-api-mi/kib/itrd/mi_api/v1/mi_api/order/create")
-            //.header("Authorization", "${access_token}")
-            .header("Authorization", "AQIC5wM2LY4SfczfjJKQDZyKJAbnC6MV_Jh3GcDjqOUgtqQ.*AAJTSQACMDIAAlNLABQtMjg1ODUyNzg0OTA3NzI0MTkyNQACUzEAAjAx*")
-            .header("Content-Type", "application/json")
-            .body(StringBody(
-              """{
-                |    "accountNumber": "500119",
-                |    "securCode": "CNYRUB_TOM",
-                |    "secBoard": "CETS",
-                |    "bs": "B",
-                |    "amount": 1000,
-                |    "type": 1,
-                |    "sourceType": 1,
-                |    "price": 13.4
-                |}""".stripMargin))
-            .check(jsonPath("$.orderId").saveAs("orderId"))
-        )
-          .exec(
-            http("Confirm")
-              .post("/ui-api-mi/kib/itrd/mi_api/v1/mi_api/order/confirm/${orderId}")
-              .header("Authorization", "AQIC5wM2LY4SfczfjJKQDZyKJAbnC6MV_Jh3GcDjqOUgtqQ.*AAJTSQACMDIAAlNLABQtMjg1ODUyNzg0OTA3NzI0MTkyNQACUzEAAjAx*")
-              //.header("Authorization", "${access_token}")
-              .header("Content-Type", "application/json")
-              .body(StringBody(
-                """{}""".stripMargin))
-          )
-      }
-  }
 
   val scn1 = scenario("Code reuse")
+
+        .exec(Create())
 //    .exec(authenticate )
 //    .during(executionTime) {
 //      doIf(session => {
@@ -119,8 +94,7 @@ class SimulatorCreate extends Simulation {
 //        exec(authenticate )
 //      }
     //.exec(refresh())
-    .exec(Create())
-    //.exec(Create1())
+
 
 
     //.exec(Confirm())
@@ -151,51 +125,10 @@ class SimulatorCreate extends Simulation {
     //    constantUsersPerSec(600).during(5))
     //Cупер целевой
       // 1 тест
-//        rampUsersPerSec(0).to(60).during(30.minutes),
-//        constantUsersPerSec(60).during(3),
-//        rampUsersPerSec(60).to(120).during(3.minutes),
-//        constantUsersPerSec(120).during(3)
-//      // 2 тест
-//        rampUsersPerSec(0).to(180).during(3.minutes),
-//        constantUsersPerSec(180).during(3),
-//        rampUsersPerSec(180).to(240).during(3.minutes),
-//        constantUsersPerSec(240).during(3)
-//      // 3 тест
-//        rampUsersPerSec(0).to(300).during(3.minutes),
-//        constantUsersPerSec(300).during(3),
-//        rampUsersPerSec(300).to(360).during(3.minutes),
-//        constantUsersPerSec(360).during(3)
-//      // 4 тест
-//        rampUsersPerSec(0).to(420).during(3.minutes),
-//        constantUsersPerSec(420).during(3),
-//        rampUsersPerSec(420).to(480).during(3.minutes),
-//        constantUsersPerSec(480).during(3)
-//      // 4 тест
-//        rampUsersPerSec(0).to(540).during(3.minutes),
-//        constantUsersPerSec(540).during(3),
-//        rampUsersPerSec(540).to(60).during(3.minutes),
-//        constantUsersPerSec(600).during(3))
-//Целевой
-    //    nothingFor(5 seconds),
-    //    rampUsersPerSec(0).to(1).during(7.minutes),
-    //    constantUsersPerSec(1).during(5),
-    //    rampUsersPerSec(1).to(2).during(7.minutes),
-    //    constantUsersPerSec(2).during(5),
-    //    rampUsersPerSec(2).to(3).during(7.minutes),
-    //    constantUsersPerSec(3).during(5),
-    //    rampUsersPerSec(3).to(4).during(7.minutes),
-    //    constantUsersPerSec(4).during(5),
-    //    rampUsersPerSec(4).to(5).during(7.minutes),
-    //    constantUsersPerSec(5).during(5),
-    //    rampUsersPerSec(5).to(6).during(7.minutes),
-    //    constantUsersPerSec(6).during(5),
-    //    rampUsersPerSec(6).to(7).during(7.minutes),
-    //    constantUsersPerSec(7).during(5),
-    //    rampUsersPerSec(7).to(8).during(7.minutes),
-    //    constantUsersPerSec(8).during(5),
-    //    rampUsersPerSec(8).to(9).during(7.minutes),
-    //    constantUsersPerSec(9).during(5),
-    //    rampUsersPerSec(9).to(10).during(7.minutes),
-    //    constantUsersPerSec(10).during(5))
+//        rampUsersPerSec(0).to(150).during(30.seconds), // 2 250
+//        constantUsersPerSec(150).during(30.seconds), // 2250 + 4500 = 6750
+//        rampUsersPerSec(150).to(300).during(30.seconds), // 6750 + 6750 = 13 500
+//        constantUsersPerSec(300).during(10.seconds) // 13 500 + 4500 = 18 000
+
   ).protocols(httpProtocol))
 }
